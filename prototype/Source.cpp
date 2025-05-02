@@ -228,32 +228,79 @@ void voterMenu() {
 		}
 	} while (option != 4);
 }
+void registerUser() {
+	ifstream infile("users.txt");
+	string existingUsername, existingPassword;
+	string newUsername, newPassword;
+
+	cout << "Enter new username: ";
+	cin >> newUsername;
+
+
+	while (infile >> existingUsername >> existingPassword) {
+		if (existingUsername == newUsername) {
+			cout << "Username already registered! Please log in.\n";
+
+			infile.close();
+			return;
+		}
+	}
+	infile.close();
+
+
+	ofstream outfile("users.txt", ios::app);
+	cout << "Enter password: ";
+	cin >> newPassword;
+
+	outfile << newUsername << " " << newPassword << endl;
+	outfile.close();
+
+	cout << "User registered successfully!\n";
+}
 
 
 
 
 
 int main() {
-	User u1;
-	u1.setusername("Bilal");
-	u1.setuserpassword("abc123");
-	string inputUsername, inputPassword;
-	cout << "Dear user please provide your username and password before move to election mannagment system" << endl;
-	cout << "Enter username: ";
-	cin >> inputUsername;
-	cout << "Enter password: ";
-	cin >> inputPassword;
-	if (u1.login(inputUsername, inputPassword)) {
-		cout << "Login successful!\n";
-		mainMenu();
+	int choice;
+	cout << "Welcome to the Election Management System\n";
+	cout << "1. Register New User\n2. Login\nEnter option: ";
+	cin >> choice;
+
+	if (choice == 1) {
+		registerUser();
+	}
+	else if (choice == 2) {
+		string inputUsername, inputPassword;
+		cout << "Enter username: ";
+		cin >> inputUsername;
+		cout << "Enter password: ";
+		cin >> inputPassword;
+
+		ifstream infile("users.txt");
+		string storedUsername, storedPassword;
+		bool loginSuccess = false;
+
+		while (infile >> storedUsername >> storedPassword) {
+			if (inputUsername == storedUsername && inputPassword == storedPassword) {
+				loginSuccess = true;
+				break;
+			}
+		}
+		infile.close();
+
+		if (loginSuccess) {
+			cout << "Login successful!\n";
+			mainMenu();
+		}
+		else {
+			cout << "Login failed! Incorrect username or password.\n";
+		}
 	}
 	else {
-		cout << "Login failed! Incorrect username or password.\n";
+		cout << "Invalid choice, exiting...\n";
 	}
-
-
-
-
 
 	return 0;
 }
