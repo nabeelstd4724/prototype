@@ -127,10 +127,37 @@ public:
 
 };
 int Candidate::total_vote = 0;
+class Election {
+protected:
+	string electionType;
+public:
+	Election(string type) : electionType(type) {}
+	virtual void startElection() = 0;
+	virtual void endElection() = 0;
+};
+
+class LocalElection : public Election {
+public:
+	LocalElection() : Election("Local") {}
+	void startElection() override { cout << "Local Election Started.\n"; }
+	void endElection() override { cout << "Local Election Ended.\n"; }
+};
+
+class NationalElection : public Election {
+public:
+	NationalElection() : Election("National") {}
+	void startElection() override { cout << "National Election Started.\n"; }
+	void endElection() override { cout << "National Election Ended.\n"; }
+};
+void displayResults() {
+	cout << "Total Votes: " << Candidate::get_totalvote() << endl;
+}
 
 
 void adminMenu();
 void voterMenu();
+void displayResults();
+void displayHelp();
 void mainMenu() {
 	int choice;
 	do {
@@ -139,7 +166,9 @@ void mainMenu() {
 		cout << "\n===================================";
 		cout << "\n1. Admin";
 		cout << "\n2. Voter";
-		cout << "\n3. Exit";
+		cout << "\n3. View Election Result";
+		cout << "\n4. Help & Guidelines";
+		cout << "\n5. Exit";
 		cout << "\nEnter your choice: ";
 		cin >> choice;
 
@@ -151,12 +180,18 @@ void mainMenu() {
 			voterMenu();
 			break;
 		case 3:
+			displayResults();
+			break;
+		case 4:
+			displayHelp();
+			break;
+		case 5:
 			cout << "Exiting program...\n";
 			break;
 		default:
 			cout << "Invalid choice! Please try again.\n";
 		}
-	} while (choice != 3);
+	} while (choice != 5);
 }
 
 
@@ -175,7 +210,7 @@ void adminMenu() {
 
 		switch (option) {
 		case 1:
-			cout << "Add Candidate Logic Here...\n";
+			cout << "Add candidate\n";
 			break;
 		case 2:
 			cout << "Add Voter Logic Here...\n";
@@ -257,50 +292,91 @@ void registerUser() {
 
 	cout << "User registered successfully!\n";
 }
+void displayHelp() {
+	cout << "\n========== HELP & GUIDELINES ==========\n";
+	cout << "Welcome to the Online Voting System!\n";
+	cout << "----------------------------------------\n";
 
+	cout << "\n1. **User Authentication:**\n";
+	cout << "- Voters and Administrators must log in using their credentials.\n";
+	cout << "- If you are a new user, you must register first.\n";
 
+	cout << "\n2. Voter Guidelines:\n";
+	cout << "- You can view available elections and candidates.\n";
+	cout << "- You are allowed to cast **only one vote** in an election.\n";
+	cout << "- Once you vote, you **cannot** change your selection.\n";
+	cout << "- You can check your vote status anytime.\n";
+
+	cout << "\n3. Administrator Privileges:\n";
+	cout << "- Create and manage elections (local, national, regional).\n";
+	cout << "- Add, modify, or remove candidates.\n";
+	cout << "- View and finalize election results.\n";
+
+	cout << "\n4. Election Process:\n";
+	cout << "- Elections have a start and end date.\n";
+	cout << "- Votes are counted automatically after the election period ends.\n";
+
+	cout << "\n5. Security Measures:\n";
+	cout << "- CNIC validation ensures only eligible voters participate.\n";
+	cout << "- Passwords should be secure to protect account access.\n";
+
+	cout << "\n----------------------------------------\n";
+	cout << "For further assistance, contact the system administrator.\n";
+}
 
 
 
 int main() {
 	int choice;
 	cout << "Welcome to the Election Management System\n";
-	cout << "1. Register New User\n2. Login\nEnter option: ";
-	cin >> choice;
 
-	if (choice == 1) {
-		registerUser();
-	}
-	else if (choice == 2) {
-		string inputUsername, inputPassword;
-		cout << "Enter username: ";
-		cin >> inputUsername;
-		cout << "Enter password: ";
-		cin >> inputPassword;
+	while (true) {  
+		cout << "1. Register New User\n2. Login\n3. Exit\nEnter option: ";
+		cin >> choice;
 
-		ifstream infile("users.txt");
-		string storedUsername, storedPassword;
-		bool loginSuccess = false;
+		if (choice == 1) {
+			registerUser();
+		}
+		else if (choice == 2) {
+			string inputUsername, inputPassword;
+			cout << "Enter username: ";
+			cin >> inputUsername;
+			cout << "Enter password: ";
+			cin >> inputPassword;
 
-		while (infile >> storedUsername >> storedPassword) {
-			if (inputUsername == storedUsername && inputPassword == storedPassword) {
-				loginSuccess = true;
-				break;
+			ifstream infile("users.txt");
+			string storedUsername, storedPassword;
+			bool loginSuccess = false;
+
+			while (infile >> storedUsername >> storedPassword) {
+				if (inputUsername == storedUsername && inputPassword == storedPassword) {
+					loginSuccess = true;
+					break;
+				}
+			}
+			infile.close();
+
+			if (loginSuccess) {
+				cout << "Login successful!\n";
+				mainMenu();  
+				return 0;
+			}
+			else {
+				cout << "Login failed! Incorrect username or password.\n";
+				cout << "Would you like to retry? (y/n): ";
+				char retry;
+				cin >> retry;
+				if (retry == 'n' || retry == 'N') {
+					continue;  
+				}
 			}
 		}
-		infile.close();
-
-		if (loginSuccess) {
-			cout << "Login successful!\n";
-			mainMenu();
+		else if (choice == 3) {
+			cout << "Exiting program...\n";
+			return 0;
 		}
 		else {
-			cout << "Login failed! Incorrect username or password.\n";
+			cout << "Invalid choice, please try again.\n";
 		}
 	}
-	else {
-		cout << "Invalid choice, exiting...\n";
-	}
-
-	return 0;
 }
