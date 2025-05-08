@@ -143,7 +143,7 @@ void displayHelp();
 void mainMenu() {
     int choice;
     do {
-        system("cls");
+        
         cout << "\n===================================";
         cout << "\n    Election Management System";
         cout << "\n===================================";
@@ -404,7 +404,13 @@ int main() {
 
     while (true) {
         system("cls");
-        cout << "\n1. Admin Login\n2. Voter Login\n3. Register Admin\n4. Register Voter\n5. Exit\nEnter option: ";
+        cout << "\n======================================================================================================================";
+        cout << "\n\t\t\t\t\t   [ Election Management System ]";
+        cout << "\n======================================================================================================================";
+        cout << "\n======================================================================================================================";
+		cout << "\n\t\t\t\t\t\t   [ Main Menu ]";
+        cout << "\n";
+        cout << "\n\t\t\t\t\t\t1. Admin Login\n\t\t\t\t\t\t2. Voter Login\n\t\t\t\t\t\t3. Register Admin\n\t\t\t\t\t\t4. Register Voter\n\t\t\t\t\t\t5. Exit\nEnter option: ";
         cin >> choice;
         cin.ignore();
 
