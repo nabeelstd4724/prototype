@@ -106,6 +106,50 @@ public:
     }
 };
 int Candidate::total_vote = 0;
+//void Admin ::viewElectionResults() {
+//    //  Paste the fixed function here:
+//    // Step 1: Read all candidates into an array
+//    ifstream candFile("candidates.txt");
+//    string cname;
+//    string candidateNames[100]; // Assume max 100 candidates
+//    int candidateVotes[100] = { 0 }; // To store votes
+//    int candidateCount = 0;
+//
+//    while (candFile >> cname) {
+//        candidateNames[candidateCount] = cname;
+//        candidateVotes[candidateCount] = 0;
+//        candidateCount++;
+//    }
+//    candFile.close();
+//
+//    // Step 2: Read votes and update vote count for each candidate
+//    ifstream voteFile("votes.txt");
+//    string voter, votedFor;
+//    int totalVotes = 0;
+//    while (voteFile >> voter >> votedFor) {
+//        // Search which candidate this vote is for
+//        for (int i = 0; i < candidateCount; i++) {
+//            if (candidateNames[i] == votedFor) {
+//                candidateVotes[i]++;
+//                break;
+//            }
+//        }
+//        totalVotes++;
+//    }
+//    voteFile.close();
+//
+//    // Step 3: Display results
+//    for (int i = 0; i < candidateCount; i++) {
+//        cout << "Candidate " << candidateNames[i] << " received " << candidateVotes[i] << " votes." << endl;
+//    }
+//
+//    cout << "Total Votes Cast: " << totalVotes << endl;
+//}
+
+
+
+
+
 
 class Election {
 protected:
