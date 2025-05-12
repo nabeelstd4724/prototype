@@ -282,21 +282,116 @@ void voterMenu() {
         cout << "\nEnter choice: ";
         cin >> option;
 
-        switch (option) {
-        case 1:
-            cout << "Casting vote logic here...\n";
-            break;
-        case 2:
-            cout << "Checking voting status...\n";
-            break;
-        case 3:
-            displayResults();
-            break;
-        case 4:
-            cout << "Returning to Main Menu...\n";
-            break;
-        default:
-            cout << "Invalid choice, try again.\n";
+        switch (option) 
+        {
+           case 1:
+           {
+              cout << "Casting vote logic here...\n";
+              string username, password, candidate;
+              cout << "Enter your username: ";
+              cin >> username;
+              cout << "Enter your password: ";
+              cin >> password;
+
+              ifstream infile("voters.txt");
+              string storedUsername, storedPassword;
+              bool found = false;
+
+              while (infile >> storedUsername >> storedPassword) {
+                  if (username == storedUsername && password == storedPassword) {
+                      found = true;
+                      break;
+                  }
+              }
+              infile.close();
+
+              if (found) {
+                  string cnic;
+                  int age;
+                  cout << "Enter your CNIC (13 digits): ";
+                  cin >> cnic;
+                  cout << "Enter your age: ";
+                  cin >> age;
+
+                  Voter v(username, password, cnic, age);
+                  if (age < 18 || !v.validatecnic(cnic)) {
+                      cout << " Invalid age or CNIC. Cannot vote.\n";
+                      break;
+                  }
+
+
+                  ifstream voteCheck("votes.txt");
+                  string votedCnic, votedCandidate;
+                  bool alreadyVoted = false;
+
+                  while (voteCheck >> votedCnic >> votedCandidate) {
+                      if (votedCnic == cnic) {
+                          alreadyVoted = true;
+                          break;
+                      }
+                  }
+                  voteCheck.close();
+
+                  if (alreadyVoted) {
+                      cout << " CNIC already used to vote. You cannot vote again.\n";
+                      break;
+                  }
+
+                  /*v.displayProvinceAndGender();*/
+
+                  cout << "Enter candidate name you want to vote for: ";
+                  cin.ignore();
+                  getline(cin, candidate);
+
+
+                  bool candidateExists = false;
+                  ifstream candidatesFile("candidates.txt");
+                  string fileCandidate;
+
+                  while (getline(candidatesFile, fileCandidate)) {
+                      if (fileCandidate == candidate) {
+                          candidateExists = true;
+                          break;
+                      }
+                  }
+                  candidatesFile.close();
+
+                  if (!candidateExists) {
+                      cout << " Sorry, that candidate is not registered.\n";
+                      break;
+                  }
+
+                  v.castvote(candidate);
+                  ofstream voteFile("votes.txt", ios::app); // store vote with CNIC
+                  voteFile << cnic << " " << candidate << endl;
+                  voteFile.close();
+
+                  cout << " Your vote has been recorded successfully!\n";
+
+              }
+              else {
+                  cout << " Invalid credentials.\n";
+              }
+              
+              break;
+           }
+           case 2:
+           {
+              cout << "Checking voting status...\n";
+              break;
+           }
+           case 3:
+           {
+              displayResults();
+              break;
+           }    
+           case 4:
+           {
+              cout << "Returning to Main Menu...\n";
+              break;
+           }    
+           default:
+              cout << "Invalid choice, try again.\n";
         }
         system("pause");
     } while (option != 4);
