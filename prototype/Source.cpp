@@ -1,9 +1,10 @@
-#include <iostream>
+﻿#include <iostream>
 #include <string>
-#include<cstring>
+#include <cstring>
 #include <cctype>
 #include <fstream>
 #include <cstdlib> 
+#include <iomanip>
 using namespace std;
 
 class User {
@@ -81,6 +82,38 @@ public:
             return "You have already voted to " + cast_vote_to + "\n";
         }
     }
+    void displayProvinceAndGender() {
+        if (cnic.length() != 13) {
+            cout << "Invalid CNIC. Cannot determine province and gender.\n";
+            return;
+        }
+
+
+        char firstDigit = cnic[0];
+        string province;
+        switch (firstDigit) {
+        case '3': province = "Punjab"; break;
+        case '4': province = "Sindh"; break;
+        case '5': province = "Balochistan"; break;
+        case '6': province = "Khyber Pakhtunkhwa"; break;
+        default: province = "Unknown Province"; break;
+        }
+
+
+        char lastDigit = cnic[12];
+        string gender;
+        if (isdigit(lastDigit)) {
+            int digit = lastDigit - '0';
+            gender = (digit % 2 == 0) ? "Female" : "Male";
+        }
+        else {
+            gender = "Unknown Gender";
+        }
+
+        cout << "Province: " << province << endl;
+        cout << "Gender: " << gender << endl;
+    }
+
 };
 
 class Candidate {
@@ -106,50 +139,213 @@ public:
     }
 };
 int Candidate::total_vote = 0;
-//void Admin ::viewElectionResults() {
-//    //  Paste the fixed function here:
-//    // Step 1: Read all candidates into an array
-//    ifstream candFile("candidates.txt");
-//    string cname;
-//    string candidateNames[100]; // Assume max 100 candidates
-//    int candidateVotes[100] = { 0 }; // To store votes
-//    int candidateCount = 0;
-//
-//    while (candFile >> cname) {
-//        candidateNames[candidateCount] = cname;
-//        candidateVotes[candidateCount] = 0;
-//        candidateCount++;
-//    }
-//    candFile.close();
-//
-//    // Step 2: Read votes and update vote count for each candidate
-//    ifstream voteFile("votes.txt");
-//    string voter, votedFor;
-//    int totalVotes = 0;
-//    while (voteFile >> voter >> votedFor) {
-//        // Search which candidate this vote is for
-//        for (int i = 0; i < candidateCount; i++) {
-//            if (candidateNames[i] == votedFor) {
-//                candidateVotes[i]++;
-//                break;
-//            }
-//        }
-//        totalVotes++;
-//    }
-//    voteFile.close();
-//
-//    // Step 3: Display results
-//    for (int i = 0; i < candidateCount; i++) {
-//        cout << "Candidate " << candidateNames[i] << " received " << candidateVotes[i] << " votes." << endl;
-//    }
-//
-//    cout << "Total Votes Cast: " << totalVotes << endl;
-//}
+void displayResults() {
+    ifstream file("candidates.txt");
+    if (!file) {
+        cout << "No candidates found.\n";
+        return;
+    }
+
+    string name, party;
+    int totalVotes = 0;
+    int maxVotes = -1;
+    string leadingCandidate;
+
+    cout << "\n========== Election Results ==========\n";
+    while (file >> quoted(name) >> quoted(party)) {
+        int vote = 0;
+
+
+        ifstream votesFile("votes.txt");
+        string voter, votedName;
+        while (votesFile >> voter >> votedName) {
+            if (votedName == name) {
+                vote++;
+            }
+        }
+        votesFile.close();
+
+        cout << "Candidate: " << name << "        Party: " << party << "      Votes: " << vote << endl;
+
+        totalVotes += vote;
+
+        if (vote > maxVotes) {
+            maxVotes = vote;
+            leadingCandidate = name;
+        }
+    }
+
+    file.close();
+
+    cout << "--------------------------------------\n";
+    cout << "Total Votes Cast: " << totalVotes << endl;
+
+    if (maxVotes > 0) {
+        cout << "🏆 Leading Candidate: " << leadingCandidate << " with " << maxVotes << " votes.\n";
+    }
+    else {
+        cout << "No votes have been cast yet.\n";
+    }
+}
+
+class Admin : public User {
+public:
+    Admin() {}
+    Admin(string u, string p) : User(u, p) {}
+
+    void addCandidate() {
+        string name, party;
+        cout << "Enter candidate name: ";
+        cin.ignore();
+        getline(cin, name);
+
+
+        ifstream readFile("candidates.txt");
+        string existingName, existingParty;
+        bool duplicate = false;
+        while (readFile >> quoted(existingName) >> quoted(existingParty)) {
+            if (existingName == name) {
+                duplicate = true;
+                break;
+            }
+        }
+        readFile.close();
+
+        if (duplicate) {
+            cout << "❌ Candidate \"" << name << "\" is already registered!\n";
+            return;
+        }
+
+        cout << "Enter party name: ";
+        getline(cin, party);
+
+        ofstream file("candidates.txt", ios::app);
+        file << quoted(name) << " " << quoted(party) << endl;
+        file.close();
+        cout << "✅ Candidate added successfully!\n";
+    }
+
+    void viewCandidates() {
+        ifstream file("candidates.txt");
+        string name, party;
+        int count = 1;
+
+        cout << "\n--- Candidate List ---\n";
+        while (file >> quoted(name) >> quoted(party)) {
+            cout << count << ". " << name << " (" << party << ")\n";
+            count++;
+        }
+        file.close();
+    }
 
 
 
 
 
+    void viewElectionResults();
+
+    void viewVoters() {
+        ifstream file("voters.txt");
+        string name, pass;
+        int count = 1;
+
+        cout << "\n--- Voter List ---\n";
+        while (file >> name >> pass) {
+            cout << count << ". " << name << endl;
+            count++;
+        }
+
+        file.close();
+    }
+
+    void viewResults() {
+        ifstream file("candidates.txt");
+        if (!file) {
+            cout << "No candidates available.\n";
+            return;
+        }
+
+        string name, party;
+        int vote;
+        int totalVotes = 0;
+        int maxVotes = -1;
+        string leadingCandidate;
+
+        cout << "\n--- Election Results ---\n";
+        while (file >> quoted(name) >> quoted(party)) {
+            vote = 0;
+
+
+            ifstream votesFile("votes.txt");
+            string votedName;
+            while (votesFile >> quoted(votedName)) {
+                if (votedName == name) {
+                    vote++;
+                }
+            }
+            votesFile.close();
+
+            cout << name << " received " << vote << " votes.\n";
+            totalVotes += vote;
+
+            if (vote > maxVotes) {
+                maxVotes = vote;
+                leadingCandidate = name;
+            }
+        }
+
+        file.close();
+        cout << "Total Votes: " << totalVotes << endl;
+
+        if (maxVotes > 0) {
+            cout << "Candidate in lead: " << leadingCandidate << " with " << maxVotes << " votes.\n";
+        }
+        else {
+            cout << "No votes have been cast yet.\n";
+        }
+    }
+
+
+
+};
+void Admin::viewElectionResults() {
+
+    ifstream candFile("candidates.txt");
+    string cname;
+    string candidateNames[100];
+    int candidateVotes[100] = { 0 };
+    int candidateCount = 0;
+
+    while (candFile >> cname) {
+        candidateNames[candidateCount] = cname;
+        candidateVotes[candidateCount] = 0;
+        candidateCount++;
+    }
+    candFile.close();
+
+
+    ifstream voteFile("votes.txt");
+    string voter, votedFor;
+    int totalVotes = 0;
+    while (voteFile >> voter >> votedFor) {
+
+        for (int i = 0; i < candidateCount; i++) {
+            if (candidateNames[i] == votedFor) {
+                candidateVotes[i]++;
+                break;
+            }
+        }
+        totalVotes++;
+    }
+    voteFile.close();
+
+
+    for (int i = 0; i < candidateCount; i++) {
+        cout << "Candidate " << candidateNames[i] << " received " << candidateVotes[i] << " votes." << endl;
+    }
+
+    cout << "Total Votes Cast: " << totalVotes << endl;
+}
 
 class Election {
 protected:
@@ -174,24 +370,20 @@ public:
     void endElection() override { cout << "National Election Ended.\n"; }
 };
 
-void displayResults() {
-    system("cls");
-	cout << "----------------------------------------------------------------------------------------------------------------------------\n";
-    cout << "===============================================[  Election Results  ]=======================================================\n";
-	cout << "----------------------------------------------------------------------------------------------------------------------------\n";
-    cout << "Total Votes: " << Candidate::get_totalvote() << endl;
-}
 
-void adminMenu();
+
+void adminMenu(Admin& admin);
 void voterMenu();
 void displayHelp();
 
 void mainMenu() {
     int choice;
+    Admin a;
     do {
-        cout << "-----------------------------------------------------------------------------------------------------------------------------\n";
-        cout << "=====================================[  Election Management System  ]========================================================";
-        cout << "----------------------------------------------------------------------------------------------------------------------------\n";
+        system("cls");
+        cout << "\n===================================";
+        cout << "\n    Election Management System";
+        cout << "\n===================================";
         cout << "\n1. Admin";
         cout << "\n2. Voter";
         cout << "\n3. View Election Result";
@@ -202,7 +394,7 @@ void mainMenu() {
 
         switch (choice) {
         case 1:
-            adminMenu();
+            adminMenu(a);
             break;
         case 2:
             voterMenu();
@@ -225,56 +417,52 @@ void mainMenu() {
     } while (choice != 5);
 }
 
-void adminMenu() {
+void adminMenu(Admin& admin) {
     int option;
     do {
         system("cls");
-        cout << "\n======================================================================================================================";
-        cout << "\n\t\t\t\t\t\t[ Admin Menu ]";
-        cout << "\n======================================================================================================================";
-
-        cout << "\n\t\t\t\t\t1. Add Candidate";
-        cout << "\n\t\t\t\t\t2. Add Voter";
-        cout << "\n\t\t\t\t\t3. View All Candidates";
-        cout << "\n\t\t\t\t\t4. View All Voters";
-        cout << "\n\t\t\t\t\t5. View Election Results";
-        cout << "\n\t\t\t\t\t6. Back to Main Menu";
-        cout << "\n\t\t\t\t\tEnter choice: ";
+        cout << "\n------ Admin Menu ------";
+        cout << "\n1. Add Candidate";
+        cout << "\n2. View All Candidates";
+        cout << "\n3. View All Voters";
+        cout << "\n4. View Election Results";
+        cout << "\n5. Back to Main Menu";
+        cout << "\nEnter choice: ";
         cin >> option;
 
         switch (option) {
         case 1:
-            cout << "Add candidate\n";
+            admin.addCandidate();
             break;
         case 2:
-            cout << "Add Voter Logic Here...\n";
+            admin.viewCandidates();
             break;
         case 3:
-            cout << "Displaying all candidates...\n";
+            admin.viewVoters();
             break;
         case 4:
-            cout << "Displaying all voters...\n";
+            admin.viewResults();
             break;
         case 5:
-            displayResults();
-            break;
-        case 6:
             cout << "Returning to Main Menu...\n";
             break;
         default:
             cout << "Invalid choice, try again.\n";
         }
         system("pause");
-    } while (option != 6);
+    } while (option != 5);
+}
+string toLower(string str) {
+    for (int i = 0; i < str.length(); i++)
+        str[i] = tolower(str[i]);
+    return str;
 }
 
 void voterMenu() {
     int option;
     do {
         system("cls");
-        cout << "\n======================================================================================================================";
-        cout << "\n\t\t\t\t\t Voter Menu ";
-		cout << "\n======================================================================================================================";
+        cout << "\n------ Voter Menu ------";
         cout << "\n1. Cast Vote";
         cout << "\n2. Check Voting Status";
         cout << "\n3. View Election Results";
@@ -282,120 +470,154 @@ void voterMenu() {
         cout << "\nEnter choice: ";
         cin >> option;
 
-        switch (option) 
-        {
-           case 1:
-           {
-              cout << "Casting vote logic here...\n";
-              string username, password, candidate;
-              cout << "Enter your username: ";
-              cin >> username;
-              cout << "Enter your password: ";
-              cin >> password;
+        switch (option) {
 
-              ifstream infile("voters.txt");
-              string storedUsername, storedPassword;
-              bool found = false;
+        case 1: {
+            string username, password, candidate;
+            cout << "Enter your username: ";
+            cin >> username;
+            cout << "Enter your password: ";
+            cin >> password;
 
-              while (infile >> storedUsername >> storedPassword) {
-                  if (username == storedUsername && password == storedPassword) {
-                      found = true;
-                      break;
-                  }
-              }
-              infile.close();
+            ifstream infile("voters.txt");
+            string storedUsername, storedPassword;
+            bool found = false;
 
-              if (found) {
-                  string cnic;
-                  int age;
-                  cout << "Enter your CNIC (13 digits): ";
-                  cin >> cnic;
-                  cout << "Enter your age: ";
-                  cin >> age;
+            while (infile >> storedUsername >> storedPassword) {
+                if (username == storedUsername && password == storedPassword) {
+                    found = true;
+                    break;
+                }
+            }
+            infile.close();
 
-                  Voter v(username, password, cnic, age);
-                  if (age < 18 || !v.validatecnic(cnic)) {
-                      cout << " Invalid age or CNIC. Cannot vote.\n";
-                      break;
-                  }
+            if (found) {
+                string cnic;
+                int age;
+                cout << "Enter your CNIC (13 digits): ";
+                cin >> cnic;
+                cout << "Enter your age: ";
+                cin >> age;
+
+                Voter v(username, password, cnic, age);
+                if (age < 18 || !v.validatecnic(cnic)) {
+                    cout << "Invalid age or CNIC. Cannot vote.\n";
+                    break;
+                }
 
 
-                  ifstream voteCheck("votes.txt");
-                  string votedCnic, votedCandidate;
-                  bool alreadyVoted = false;
+                ifstream voteCheck("votes.txt");
+                string votedCnic, votedCandidate;
+                bool alreadyVoted = false;
 
-                  while (voteCheck >> votedCnic >> votedCandidate) {
-                      if (votedCnic == cnic) {
-                          alreadyVoted = true;
-                          break;
-                      }
-                  }
-                  voteCheck.close();
+                while (voteCheck >> votedCnic >> votedCandidate) {
+                    if (votedCnic == cnic) {
+                        alreadyVoted = true;
+                        break;
+                    }
+                }
+                voteCheck.close();
 
-                  if (alreadyVoted) {
-                      cout << " CNIC already used to vote. You cannot vote again.\n";
-                      break;
-                  }
-
-                  /*v.displayProvinceAndGender();*/
-
-                  cout << "Enter candidate name you want to vote for: ";
-                  cin.ignore();
-                  getline(cin, candidate);
+                if (alreadyVoted) {
+                    cout << "CNIC already used to vote. You cannot vote again.\n";
+                    break;
+                }
 
 
-                  bool candidateExists = false;
-                  ifstream candidatesFile("candidates.txt");
-                  string fileCandidate;
+                v.displayProvinceAndGender();
 
-                  while (getline(candidatesFile, fileCandidate)) {
-                      if (fileCandidate == candidate) {
-                          candidateExists = true;
-                          break;
-                      }
-                  }
-                  candidatesFile.close();
+                cout << "Enter candidate name you want to vote for: ";
+                cin.ignore();
+                getline(cin, candidate);
 
-                  if (!candidateExists) {
-                      cout << " Sorry, that candidate is not registered.\n";
-                      break;
-                  }
+                bool candidateExists = false;
+                ifstream candidatesFile("candidates.txt");
+                string fileCandidate;
 
-                  v.castvote(candidate);
-                  ofstream voteFile("votes.txt", ios::app); // store vote with CNIC
-                  voteFile << cnic << " " << candidate << endl;
-                  voteFile.close();
+                while (getline(candidatesFile, fileCandidate)) {
+                    if (toLower(fileCandidate) == toLower(candidate)) {
+                        candidateExists = true;
+                        break;
+                    }
+                }
 
-                  cout << " Your vote has been recorded successfully!\n";
+                candidatesFile.close();
 
-              }
-              else {
-                  cout << " Invalid credentials.\n";
-              }
-              
-              break;
-           }
-           case 2:
-           {
-              cout << "Checking voting status...\n";
-              break;
-           }
-           case 3:
-           {
-              displayResults();
-              break;
-           }    
-           case 4:
-           {
-              cout << "Returning to Main Menu...\n";
-              break;
-           }    
-           default:
-              cout << "Invalid choice, try again.\n";
+                if (!candidateExists) {
+                    cout << "Sorry, that candidate is not registered.\n";
+                    break;
+                }
+
+                v.castvote(candidate);
+                ofstream voteFile("votes.txt", ios::app);
+                voteFile << cnic << " " << candidate << endl;
+                voteFile.close();
+
+                cout << "Your vote has been recorded successfully!\n";
+            }
+            else {
+                cout << "Invalid credentials.\n";
+            }
+            break;
+        }
+
+        case 2: {
+            string username, password;
+            cout << "Enter your username: ";
+            cin >> username;
+            cout << "Enter your password: ";
+            cin >> password;
+
+            ifstream infile("voters.txt");
+            string storedUsername, storedPassword, storedCnic;
+            bool found = false;
+
+            while (infile >> storedUsername >> storedPassword >> storedCnic) {
+                if (username == storedUsername && password == storedPassword) {
+                    found = true;
+                    break;
+                }
+            }
+            infile.close();
+
+            if (!found) {
+                cout << "Invalid credentials.\n";
+                break;
+            }
+
+
+            ifstream voteCheck("votes.txt");
+            string votedCnic, votedCandidate;
+            bool hasVoted = false;
+
+            while (voteCheck >> votedCnic >> votedCandidate) {
+                if (votedCnic == storedCnic) {
+                    cout << "You have already voted for: " << votedCandidate << endl;
+                    hasVoted = true;
+                    break;
+                }
+            }
+            voteCheck.close();
+
+            if (!hasVoted) {
+                cout << "You have not voted yet.\n";
+            }
+            break;
+        }
+
+        case 3:
+            displayResults();
+            break;
+        case 4:
+            cout << "Returning to Main Menu...\n";
+            break;
+        default:
+            cout << "Invalid choice, try again.\n";
         }
         system("pause");
     } while (option != 4);
 }
+
 
 void registerAdmin() {
     ifstream infile("admin.txt");
@@ -520,10 +742,9 @@ bool loginVoter() {
 
 void displayHelp() {
     system("cls");
-	cout << "--------------------------------------------------------------------------------------------------------------------------\n";
-    cout << "\n=============================================== HELP & GUIDELINES ======================================================\n";
+    cout << "\n========== HELP & GUIDELINES ==========\n";
     cout << "Welcome to the Online Voting System!\n";
-    cout << "--------------------------------------------------------------------------------------------------------------------------\n";
+    cout << "----------------------------------------\n";
 
     cout << "\n1. User Authentication:\n";
     cout << "- Voters and Admins must log in.\n";
@@ -541,56 +762,108 @@ void displayHelp() {
     cout << "- CNIC must be 13 digits without spaces.\n";
     cout << "- Keep your password secure.\n";
 
-    cout << "\n------------------------------------------------------------------------------------------------------------------------\n";
+    cout << "\n----------------------------------------\n";
 }
 
 int main() {
     int choice;
-    cout << "Welcome to the Election Management System\n";
+    
 
     while (true) {
         system("cls");
-        cout << "---------------------------------------------------------------------------------------------------------------------\n";
-        cout << "========================================[  Election Management System  ]=============================================\n";
-        cout << "---------------------------------------------------------------------------------------------------------------------\n";
-		cout << "\n\t\t\t\t\t\t   [ Main Menu ]";
-        cout << "\n";
-        cout << "\n\t\t\t\t\t\t1. Admin Login\n\t\t\t\t\t\t2. Voter Login\n\t\t\t\t\t\t3. Register Admin\n\t\t\t\t\t\t4. Register Voter\n\t\t\t\t\t\t5. Exit\nEnter option: ";
+        cout << "================================================" << endl;
+        cout << "*******Welcome to Election 2025 *************** " << endl;
+        cout << "================================================" << endl;
+
+        cout << "\n1. Admin Login\n2. Voter Login\n3. Register Admin\n4. Register Voter\n5. Exit\nEnter option: ";
         cin >> choice;
         cin.ignore();
 
         switch (choice) {
-        case 1:
-            if (loginAdmin()) {
-                cout << " Admin Login Successful!\n";
-                system("pause");
-                adminMenu();
-            }
-            else {
-                char retry;
-                cout << " Login failed! Incorrect username or password.\n";
-                cout << "Would you like to retry? (y/n): ";
-                cin >> retry;
-                cin.ignore();
-                if (retry == 'n' || retry == 'N') continue;
-            }
-            break;
+        case 1: {
 
-        case 2:
-            if (loginVoter()) {
-                cout << " Voter Login Successful!\n";
+            string inputUsername, inputPassword;
+            cout << "Enter Admin Username: ";
+            cin >> inputUsername;
+            cout << "Enter Admin Password: ";
+            cin >> inputPassword;
+
+            ifstream infile("admin.txt");
+            string storedUsername, storedPassword;
+            bool loginSuccess = false;
+
+            while (infile >> storedUsername >> storedPassword) {
+                if (inputUsername == storedUsername && inputPassword == storedPassword) {
+                    loginSuccess = true;
+                    break;
+                }
+            }
+            infile.close();
+
+            if (loginSuccess) {
+                cout << " Admin Login Successful!\n";
+                Admin admin(inputUsername, inputPassword);
                 system("pause");
-                voterMenu();
+                adminMenu(admin);
             }
             else {
                 char retry;
-                cout << " Login failed! Incorrect username or password.\n";
+                cout << "Login failed! Incorrect username or password.\n";
                 cout << "Would you like to retry? (y/n): ";
                 cin >> retry;
                 cin.ignore();
-                if (retry == 'n' || retry == 'N') continue;
+                if (retry == 'n' || retry == 'N') break;
             }
             break;
+        }
+
+        case 2: {
+            string username, password;
+            cout << "Enter your username: ";
+            cin >> username;
+            cout << "Enter your password: ";
+            cin >> password;
+
+            ifstream infile("voters.txt");
+            string storedUsername, storedPassword, storedCnic;
+            bool found = false;
+
+            while (infile >> storedUsername >> storedPassword >> storedCnic) {
+                if (username == storedUsername && password == storedPassword) {
+                    found = true;
+                    break;
+                }
+            }
+            infile.close();
+
+            if (!found) {
+                cout << "Invalid information.\n";
+                system("pause");
+                break;
+            }
+
+
+            ifstream voteCheck("votes.txt");
+            string votedCnic, votedCandidate;
+            bool hasVoted = false;
+
+            while (voteCheck >> votedCnic >> votedCandidate) {
+                if (votedCnic == storedCnic) {
+                    cout << "You have already voted for: " << votedCandidate << endl;
+                    hasVoted = true;
+                    break;
+                }
+            }
+            voteCheck.close();
+
+            if (!hasVoted) {
+                cout << "You have not voted yet.\n";
+            }
+
+
+            voterMenu();
+            break;
+        }
 
         case 3:
             registerAdmin();
@@ -612,15 +885,4 @@ int main() {
             break;
         }
     }
-
-
-
-
-
-
-
-
-
-
-
 }
