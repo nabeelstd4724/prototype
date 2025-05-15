@@ -15,8 +15,8 @@ void adminMenu(Admin& admin);
 void voterMenu(Voter& loggedInVoter);
 void displayHelp();
 void displayResults(const string& electionType);
-bool isElectionActive(const string& electionType); // Added
-void clearInputBuffer(); // Modified prototype
+bool isElectionActive(const string& electionType); 
+void clearInputBuffer(); 
 
 class User {
 protected:
@@ -54,7 +54,7 @@ public:
 
     void setage(int a) {
         if (a < 18) {
-            // cout << "Age must be 18 or older for voting eligibility.\n"; // Warning can be given at point of voting
+             cout << "Age must be 18 or older for voting eligibility.\n"; 
         }
         this->age = a;
     }
@@ -116,11 +116,11 @@ string toLower(string str) {
     return str;
 }
 
-// Modified clearInputBuffer to not use <limits>
+
 void clearInputBuffer() {
-    cin.clear(); // Clear error flags
+    cin.clear(); // Clear 
     char c;
-    while (cin.get(c) && c != '\n'); // Read characters until newline or EOF
+    while (cin.get(c) && c != '\n'); 
 }
 
 void displayResults(const string& electionType) {
@@ -138,8 +138,7 @@ void displayResults(const string& electionType) {
     int maxVotes = -1;
     bool anyCandidatesListed = false;
 
-    // Rewind file or re-open if necessary. Since it's just opened, it's at the beginning.
-    // Changed: Direct reading from file stream, removed stringstream
+
     while (candFile >> quoted(candName) >> quoted(candParty)) {
         anyCandidatesListed = true;
         int currentCandidateVotes = 0;
@@ -187,14 +186,14 @@ void displayResults(const string& electionType) {
         cout << "Leading Candidate(s): ";
         bool firstLeader = true;
 
-        ifstream candFileAgain(candidatesFilename); // Re-open for second pass
+        ifstream candFileAgain(candidatesFilename); // Re-open 
         if (!candFileAgain) {
             // Should not happen if first read worked, but good practice
             return;
         }
 
         string tempCandNameRead, tempCandPartyRead;
-        // Changed: Direct reading from file stream
+       
         while (candFileAgain >> quoted(tempCandNameRead) >> quoted(tempCandPartyRead)) {
             int tempVotes = 0;
             ifstream voteFileAgain_check(votesFilename);
@@ -276,7 +275,7 @@ public:
         int count = 1;
         cout << "\n--- Candidate List for " << electionType << " Elections ---\n";
         bool foundAny = false;
-        // Changed: Direct reading from file stream
+       
         while (file >> quoted(name) >> quoted(party)) {
             cout << count++ << ". " << name << " (" << party << ")\n";
             foundAny = true;
@@ -345,9 +344,8 @@ bool isElectionActive(const string& electionType) {
         statusFile.close();
         return statusRead == "active";
     }
-    statusFile.close(); // Ensure closed even if read failed or file not found
-    return false; // Default to inactive if file not found or unreadable/empty or not "active"
-}
+    statusFile.close(); 
+    return false; 
 
 
 void adminMenu(Admin& admin) {
@@ -362,7 +360,7 @@ void adminMenu(Admin& admin) {
         cout << "\n3. View All Registered Voters";
         cout << "\n4. View Election Results";
         cout << "\n5. Toggle Election Status (Active/Inactive)";
-        cout << "\n6. Back to Startup Menu"; // Shifted option
+        cout << "\n6. Back to Startup Menu"; 
         cout << "\nEnter choice: ";
         cin >> option;
 
@@ -393,14 +391,14 @@ void adminMenu(Admin& admin) {
         case 3:
             admin.viewVoters();
             break;
-        case 6: // Changed option number
+        case 6: 
             cout << "Returning to Startup Menu...\n";
             break;
         default:
             cout << "Invalid choice, try again.\n";
         }
-        if (option != 6) system("pause"); // Changed option number
-    } while (option != 6); // Changed option number
+        if (option != 6) system("pause"); 
+    } while (option != 6);
 }
 
 void voterMenu(Voter& loggedInVoter) {
@@ -491,7 +489,7 @@ void voterMenu(Voter& loggedInVoter) {
                 string cName_list, cParty_list;
                 int candCount = 1;
                 bool anyCandListed = false;
-                // Changed: Direct reading
+               
                 while (candFile_list >> quoted(cName_list) >> quoted(cParty_list)) {
                     cout << candCount++ << ". " << cName_list << " (" << cParty_list << ")" << endl;
                     anyCandListed = true;
@@ -537,7 +535,7 @@ void voterMenu(Voter& loggedInVoter) {
                 voteFileOut << voterCnic << " " << quoted(officialCandidateName_vote) << endl;
                 voteFileOut.close();
 
-                cout << "[+] You have successfully voted for candidate: " << officialCandidateName_vote
+                cout << " You have successfully voted for candidate: " << officialCandidateName_vote
                     << " in the " << electionTypeChoice << " election.\n";
                 cout << "Your vote has been recorded.\n";
 
@@ -613,14 +611,14 @@ void registerAdmin() {
             }
             if (usernameTaken) {
                 cout << "Username \"" << newUsername << "\" already exists! Please choose a different one.\n";
-                newUsername = ""; // Force loop to repeat for username
+                newUsername = ""; 
             }
         }
     } while (newUsername.empty());
 
     do {
         cout << "Enter password (5 characters, at least one letter and one digit): ";
-        cin >> newPassword; // Keep it simple with cin >>
+        cin >> newPassword; 
         if (!isValidPassword(newPassword)) {
             cout << "Invalid password format. Password must be 5 characters long and include at least one letter and one digit. Try again.\n";
         }
@@ -633,17 +631,17 @@ void registerAdmin() {
     }
     outfile << newUsername << " " << newPassword << endl;
     outfile.close();
-    cout << "[+] Admin \"" << newUsername << "\" registered successfully!\n";
+    cout << " Admin \"" << newUsername << "\" registered successfully!\n";
 }
 
 void registerVoter() {
     string newUsername, newPassword, newCnic;
     cout << "\n--- Voter Registration ---\n";
 
-    // Username registration loop
+    
     do {
         cout << "Enter new voter username: ";
-        getline(cin >> ws, newUsername); // Use getline to handle potential spaces if allowed, ws to consume leading whitespace
+        getline(cin >> ws, newUsername); 
         if (newUsername.empty()) {
             cout << "Username cannot be empty. Try again.\n";
         }
@@ -662,13 +660,13 @@ void registerVoter() {
             }
             if (usernameExists) {
                 cout << "Username \"" << newUsername << "\" already exists! Please choose a different one.\n";
-                newUsername = ""; // Invalidate username to force loop repetition
+                newUsername = ""; 
             }
         }
     } while (newUsername.empty());
 
-    Voter tempVoterValidator; // Used for CNIC validation
-    bool cnicValidAndUnique = false; // Flag to control the CNIC input loop
+    Voter tempVoterValidator; //  for CNIC validation
+    bool cnicValidAndUnique = false; // Flag CNIC loop
 
     // CNIC registration loop
     do {
@@ -826,9 +824,9 @@ int main() {
 
                 ifstream infile("admin.txt");
                 if (!infile) {
-                    cout << "Admin file ('admin.txt') not found. Register an admin first.\n";
-                    // No system("pause") here, main loop's pause will catch it later.
-                    break; // Break from the overallAttempt loop for admin login
+                    cout << "Admin file 'admin.txt' not found. Register an admin first.\n";
+                    
+                    break; 
                 }
 
                 string storedUsername, storedPassword;
@@ -845,14 +843,14 @@ int main() {
                 infile.close();
 
                 if (!usernameFound) {
-                    cout << "[!] Username \"" << inputUsername << "\" not found.\n";
-                    if (overallAttempt == 2) { // Last overall attempt
+                    cout << " Username \"" << inputUsername << "\" not found.\n";
+                    if (overallAttempt == 2) { 
                         cout << "Maximum login attempts reached.\n";
                     }
                     else {
                         cout << "Please try again.\n";
                     }
-                    continue; // Go to the next overallAttempt (will re-ask username)
+                    continue; 
                 }
 
                 // Username exists, now try password up to 3 times for this specific user
@@ -867,7 +865,7 @@ int main() {
                         break; // Correct password, break from passAttempt loop
                     }
                     else {
-                        cout << "[!] Incorrect password.\n";
+                        cout << " Incorrect password.\n";
                         if (passAttempt == 2) { // Last password attempt for this user
                             cout << "Maximum password attempts for user \"" << inputUsername << "\" reached.\n";
                             // This overallAttempt is now considered failed due to password failure
@@ -879,27 +877,26 @@ int main() {
                     break; // Break from overallAttempt loop as login is successful
                 }
                 else if (overallAttempt == 2 && !usernameFound) {
-                    // This condition should have been caught by usernameFound check already. Redundant here.
+                   cout<<"Secound attempt";
                 }
                 else if (overallAttempt == 2) { // If it was the last overall attempt and password failed
                     cout << "Maximum login attempts reached (due to password failures).\n";
                 }
                 else if (!loginSuccess) { // If password attempts failed but overall attempts remain
-                    cout << "Returning to username prompt.\n"; // Inform user they will be asked for username again
+                    cout << "Returning to username prompt.\n"; 
                 }
 
-            } // End of overallAttempt loop
+            } 
 
             if (loginSuccess) {
-                cout << "\n[+] Admin Login Successful!\n";
+                cout << "\n Admin Login Successful!\n";
                 system("pause");
                 adminMenu(adminUser);
             }
             else {
-                // Message about login failure overall already shown within the loop.
-                // cout << "Admin login failed after all attempts.\n";
+                
             }
-            system("pause"); // Pause after the entire admin login process completes or fails
+            system("pause"); 
             break;
         }
         case 2: { // Voter Login
@@ -915,7 +912,7 @@ int main() {
                 ifstream infile("voters.txt");
                 if (!infile) {
                     cout << "Voter file ('voters.txt') not found. Register as a voter first.\n";
-                    break; // Break from overallAttempt loop for voter login
+                    break; // Break from loop
                 }
 
                 string storedUsername, storedPassword, storedCnic;
@@ -941,7 +938,7 @@ int main() {
                     else {
                         cout << "Please try again.\n";
                     }
-                    continue; // Go to next overallAttempt (will re-ask username)
+                    continue; 
                 }
 
                 // Username exists, now try password
@@ -953,7 +950,7 @@ int main() {
                     if (inputPassword == correctPasswordForUser) {
                         loginSuccess = true;
                         loggedInVoter = Voter(inputUsername, inputPassword, cnicForUser);
-                        break; // Correct password, break from passAttempt loop
+                        break; 
                     }
                     else {
                         cout << "[!] Incorrect password.\n";
@@ -961,10 +958,10 @@ int main() {
                             cout << "Maximum password attempts for user \"" << inputUsername << "\" reached.\n";
                         }
                     }
-                } // End password attempt loop
+                } // End password loop
 
                 if (loginSuccess) {
-                    break; // Break from overallAttempt loop
+                    break; // Break loop
                 }
                 else if (overallAttempt == 2) {
                     cout << "Maximum login attempts reached (due to password failures).\n";
@@ -972,17 +969,15 @@ int main() {
                 else if (!loginSuccess) {
                     cout << "Returning to username prompt.\n";
                 }
-            } // End overallAttempt loop
+            } // End loop
 
             if (loginSuccess) {
                 cout << "\n[+] Voter Login Successful!\n";
                 system("pause");
                 voterMenu(loggedInVoter);
             }
-            else {
-                // Message already given
-            }
-            system("pause"); // Pause after voter login process
+          
+            system("pause"); 
             break;
         }
         case 3:
